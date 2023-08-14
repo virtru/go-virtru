@@ -10,5 +10,5 @@ This small sample shows how to invoke the Virtru SDK via its C wrapper, using Go
 - `go build`
 
 ### To run
-- `./virtru-tdf3-go-sample`
+- `./go-virtru`
 

@@ -39,9 +39,10 @@ import (
 // #include <virtru_config_service_c.h>
 import "C"
 
-//Update these with a valid name and appID
+// Update these with a valid name and appID
 var yourEmail = C.CString("your-user-name@your-domain.com")
 var yourAppID = C.CString("11111111-1111-1111-1111-111111111111")
+
 // replace with actual URL where Configuration Service is running
 var configUrl = C.CString("http://localhost:9090")
 
@@ -52,9 +53,9 @@ func main() {
 	fmt.Printf("Bye!\n")
 }
 
-//Directly invokes the Virtru SDK via the C ABI and passes it a filename to encrypt.
-//For more information on what functionality the C API exposes, see
-//"virtru_xx_c.h" headers that ship with the Virtru SDK.
+// Directly invokes the Virtru SDK via the C ABI and passes it a filename to encrypt.
+// For more information on what functionality the C API exposes, see
+// "virtru_xx_c.h" headers that ship with the Virtru SDK.
 func getClientAndEncryptFile() {
 
 	fmt.Println("Getting Virtru client")
@@ -76,7 +77,7 @@ func getClientAndEncryptFile() {
 	C.VEncryptFileParamsDestroy(fileParamsPtr)
 }
 
-//Checks the VSTATUS C enum, exiting with a fatal error on an unrecognized status
+// Checks the VSTATUS C enum, exiting with a fatal error on an unrecognized status
 func checkVStatus(status C.VSTATUS) {
 	if status == C.VSTATUS_SUCCESS {
 		fmt.Println("All Good!")
@@ -91,6 +92,5 @@ func createAndUpdateConfigService() {
 	configService := C.VConfigServiceCreate(configUrl)
 	C.VCreateConfig(configService, C.CString("scrum_demo"), C.CString("sample.txt"))
 	C.VGetConfig(configService, C.CString("scrum_demo"), C.CString("scrum_demo.txt"))
-	metadata := C.VGetConfigMetaData(configService, C.CString("scrum_demo"));
+	_ = C.VGetConfigMetaData(configService, C.CString("scrum_demo"))
 }
-
