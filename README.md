@@ -12,9 +12,9 @@ Download the [C++ archive for Linux](https://sdk.virtru.com/cpp/latest/virtru-td
 Unpack the archive.  
 Move the unpacked folder into your project.  
 ```shell
- export CGO_LDFLAGS="-L/virtru-tdf3-lib-cpp/lib"
- export CGO_CFLAGS="-I/virtru-tdf3-lib-cpp/include"
- export CGO_ENABLED=1
+export CGO_LDFLAGS="-L/virtru-tdf3-lib-cpp/lib"
+export CGO_CFLAGS="-I${PWD}/include"
+export CGO_ENABLED=1
 ```
 
 #### macOS
@@ -27,7 +27,7 @@ Unpack the archive.
 Move the unpacked folder into your project.  
 ```shell
  export CGO_LDFLAGS="-L/virtru-tdf3-lib-cpp/lib"
- export CGO_CFLAGS="-I/virtru-tdf3-lib-cpp/include"
+ export CGO_CFLAGS="-I${PWD}/include"
  export CGO_ENABLED=1
 ```
 

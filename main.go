@@ -26,12 +26,6 @@ import (
 * For more info on how cgo works, see: https://golang.org/cmd/cgo/
  */
 
-// #cgo linux CFLAGS: -I${SRCDIR}/../virtru-tdf3-src/lib/include -I${SRCDIR}/../include
-// #cgo darwin CFLAGS: -I${SRCDIR}/../virtru-tdf3-src/lib/include -I${SRCDIR}/../include
-// #cgo windows CFLAGS: -I${SRCDIR}\..\virtru-tdf3-src\lib\include -I${SRCDIR}\..\include
-// #cgo darwin LDFLAGS: -L${SRCDIR}/../virtru-tdf3-src/build/lib -lvirtru_tdf3_static_combined -lstdc++
-// #cgo linux LDFLAGS: -L${SRCDIR}/../virtru-tdf3-src/build/lib -lvirtru_tdf3_static_combined -lpthread -ldl -lm -lstdc++
-// #cgo windows LDFLAGS: -L${SRCDIR}\..\virtru-tdf3-src\build\lib -L${SRCDIR}\..\lib -lvirtru_tdf3_static_combined -lstdc++
 // #include <stdlib.h>
 // #include <stdbool.h>
 // #include <virtru_client_c.h>
