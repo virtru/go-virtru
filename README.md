@@ -30,6 +30,10 @@ Move the unpacked folder into your project.
  export CGO_CFLAGS="-I${PWD}/include"
  export CGO_ENABLED=1
 ```
+Copy the dylib
+```shell
+sudo cp libvirtru_tdf3.dylib /usr/local/lib/libvirtru_tdf3.dylib
+```
 
 #### Windows
 

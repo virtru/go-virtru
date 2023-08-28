@@ -1,90 +1,54 @@
-/*
-* Copyright © 2021 Virtru Corporation
-*
-* SPDX - License - Identifier: MIT
-*
- */
+package virtru
 
-package main
-
-import (
-	"fmt"
-	"log"
-	"unsafe"
-)
-
-/*
-* This is a simple one-file Golang example that wraps the Virtru C SDK interface
-* and encrypts the `sample.txt` file in this directory as a TDF.
- */
-
-/*
-* The following directives tell `cgo` where to look for the
-* C static library and header files,
-* and should be modified if those files are located elsewhere.
-* They may also be overridden by setting CGO_LDFLAGS and CGO_CFLAGS env vars.
-* For more info on how cgo works, see: https://golang.org/cmd/cgo/
- */
-
+// #cgo CFLAGS: -I${SRCDIR}/include
+// #cgo darwin,arm64 LDFLAGS: -L${SRCDIR}/lib/darwin/arm64 -lvirtru_tdf3 -lstdc++
+// #cgo linux,amd64 LDFLAGS: -L${SRCDIR}/lib/linux/amd64 -lvirtru-tdf3 -lpthread -ldl -lm -lstdc++
+// #cgo windows,amd64 LDFLAGS: -L${SRCDIR}\lib\windows\amd64 -lvirtru-tdf3 -lstdc++
 // #include <stdlib.h>
 // #include <stdbool.h>
+// #include <virtru_constants_c.h>
 // #include <virtru_client_c.h>
-// #include <virtru_encrypt_file_params_c.h>
 // #include <virtru_config_service_c.h>
 import "C"
+import (
+	"errors"
+	"fmt"
+	"net/url"
+	"os"
+)
 
-// Update these with a valid name and appID
-var yourEmail = C.CString("your-user-name@your-domain.com")
-var yourAppID = C.CString("11111111-1111-1111-1111-111111111111")
-
-// replace with actual URL where Configuration Service is running
-var configUrl = C.CString("http://localhost:9090")
-
-func main() {
-	fmt.Printf("Getting ready to encrypt file")
-	getClientAndEncryptFile()
-	createAndUpdateConfigService()
-	fmt.Printf("Bye!\n")
+type Configuration struct {
+	url           *url.URL
+	configService *C.ConfigService
 }
 
-// Directly invokes the Virtru SDK via the C ABI and passes it a filename to encrypt.
-// For more information on what functionality the C API exposes, see
-// "virtru_xx_c.h" headers that ship with the Virtru SDK.
-func getClientAndEncryptFile() {
-
-	fmt.Println("Getting Virtru client")
-	inFile := C.CString("./sample.txt")
-
-	clientPtr := C.VClientCreateWithAppId(yourEmail, yourAppID)
-
-	checkVStatus(C.VSetProtocol(clientPtr, C.VProtocolHtml))
-
-	fileParamsPtr := C.VEncryptFileParamsCreate1(inFile)
-	checkVStatus(C.VEncryptFileParamsSetDisplayMessage(fileParamsPtr, C.CString("YO FROM GO")))
-	//optional - set the Virtru client log level
-	checkVStatus(C.VEnableConsoleLogging(clientPtr, C.VLogLevelTrace))
-
-	outID := make([]byte, 256)
-	checkVStatus(C.VClientEncryptFile(clientPtr, fileParamsPtr, (**C.char)(unsafe.Pointer(&outID[0]))))
-
-	C.VClientDestroy(clientPtr)
-	C.VEncryptFileParamsDestroy(fileParamsPtr)
-}
-
-// Checks the VSTATUS C enum, exiting with a fatal error on an unrecognized status
-func checkVStatus(status C.VSTATUS) {
-	if status == C.VSTATUS_SUCCESS {
-		fmt.Println("All Good!")
-	} else if status == C.VSTATUS_INVALID_PARAMS {
-		fmt.Println("Bad param!")
-	} else {
-		log.Fatalf("Something went horribly wrong: %d", status)
+func NewConfiguration(url *url.URL) (*Configuration, error) {
+	c := &Configuration{
+		url: url,
 	}
+	var configUrl = C.CString(url.String())
+	configService := C.VConfigServiceCreate(configUrl)
+	if configService == nil {
+		return nil, errors.New("config service creation failed")
+	}
+	c.configService = configService
+	return c, nil
 }
 
-func createAndUpdateConfigService() {
-	configService := C.VConfigServiceCreate(configUrl)
-	C.VCreateConfig(configService, C.CString("scrum_demo"), C.CString("sample.txt"))
-	C.VGetConfig(configService, C.CString("scrum_demo"), C.CString("scrum_demo.txt"))
-	_ = C.VGetConfigMetaData(configService, C.CString("scrum_demo"))
+func (c *Configuration) Get(key string) ([]byte, error) {
+	filename := key + ".json"
+	metadata := C.VGetConfigMetaData(c.configService, C.CString(key))
+	if metadata == nil {
+		return nil, errors.New(fmt.Sprintf("config key \"%s\" did not return result from %s", key, c.url.String()))
+	}
+	C.VGetConfig(c.configService, C.CString(key), C.CString(filename))
+	contentBytes, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, errors.Join(errors.New("config file not read"), err)
+	}
+	return contentBytes, nil
+}
+
+func (c *Configuration) Create(key string, bytes []byte) {
+	C.VCreateConfig(c.configService, C.CString(key), C.CString(string(bytes)))
 }
