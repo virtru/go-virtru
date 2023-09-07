@@ -272,7 +272,6 @@ namespace virtru {
         /// Return the userId associated with this client according to the EntityObject
         /// \return userId - The userId associated with this client
         std::string getUserId();
-
     private:
         /// A helper method to update the TDF builder;
         void initClient();

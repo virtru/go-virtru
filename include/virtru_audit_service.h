@@ -23,6 +23,11 @@ namespace virtru {
         std::string getEventById(const std::string& eventId);
 
 
+        /// Create the Audit Service entry
+        /// \param auditData - Audit Event Data
+        void writeAuditEvent(std::string&& auditData);
+
+
         /// Construct query string
         /// \param key - name of the Query, e.g. eventType
         /// \param value - value of the Query, e.g. : encrypt
