@@ -17,14 +17,42 @@ import (
 	"os"
 )
 
+type Authentication struct {
+	Url          *url.URL
+	authnService *C.TDFClientPtr
+	credentials  *C.TDFCredsPtr
+}
+
+func NewAuthentication(url *url.URL) (*Authentication, error) {
+	a := &Authentication{
+		Url: url,
+	}
+	return a, nil
+}
+
+func (a *Authentication) ClientCredentials(id string, secret string) error {
+	var clientId = C.CString(id)
+	var clientSecret = C.CString(secret)
+	var authnUrl = C.CString(a.Url.String())
+	var clientCredentials = C.TDFCreateCredentialClientCreds(authnUrl, clientId, clientSecret, nil)
+	authnService := C.TDFCreateClient(clientCredentials, authnUrl)
+	if authnService == nil {
+		return errors.New("OIDC service creation failed")
+	}
+	a.authnService = &authnService
+	fmt.Println(clientId)
+	fmt.Println(clientSecret)
+	return nil
+}
+
 type Configuration struct {
-	url           *url.URL
+	Url           *url.URL
 	configService *C.ConfigService
 }
 
 func NewConfiguration(url *url.URL) (*Configuration, error) {
 	c := &Configuration{
-		url: url,
+		Url: url,
 	}
 	var configUrl = C.CString(url.String())
 	configService := C.VConfigServiceCreate(configUrl)
@@ -39,7 +67,7 @@ func (c *Configuration) Get(key string) ([]byte, error) {
 	filename := key + ".json"
 	metadata := C.VGetConfigMetaData(c.configService, C.CString(key))
 	if metadata == nil {
-		return nil, errors.New(fmt.Sprintf("config key \"%s\" did not return result from %s", key, c.url.String()))
+		return nil, errors.New(fmt.Sprintf("config key \"%s\" did not return result from %s", key, c.Url.String()))
 	}
 	C.VGetConfig(c.configService, C.CString(key), C.CString(filename))
 	contentBytes, err := os.ReadFile(filename)
