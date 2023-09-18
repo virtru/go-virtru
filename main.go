@@ -1,7 +1,7 @@
 package virtru
 
 // #cgo CFLAGS: -I${SRCDIR}/include
-// #cgo darwin,arm64 LDFLAGS: -L${SRCDIR}/lib/darwin/arm64 -lvirtru_tdf3 -lstdc++ -lv
+// #cgo darwin,arm64 LDFLAGS: -L${SRCDIR}/lib/darwin/arm64 -lvirtru_tdf3 -lstdc++
 // #cgo linux,amd64 LDFLAGS: -L${SRCDIR}/lib/linux/amd64 -lvirtru-tdf3 -lpthread -ldl -lm -lstdc++
 // #cgo windows,amd64 LDFLAGS: -L${SRCDIR}\lib\windows\amd64 -lvirtru-tdf3 -lstdc++
 // #include <stdlib.h>
