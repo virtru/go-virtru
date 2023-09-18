@@ -1,11 +1,13 @@
 package virtru
 
 // #cgo CFLAGS: -I${SRCDIR}/include
-// #cgo darwin,arm64 LDFLAGS: -L${SRCDIR}/lib/darwin/arm64 -lvirtru_tdf3 -lstdc++
+// #cgo darwin,arm64 LDFLAGS: -L${SRCDIR}/lib/darwin/arm64 -lvirtru_tdf3 -lstdc++ -lv
 // #cgo linux,amd64 LDFLAGS: -L${SRCDIR}/lib/linux/amd64 -lvirtru-tdf3 -lpthread -ldl -lm -lstdc++
 // #cgo windows,amd64 LDFLAGS: -L${SRCDIR}\lib\windows\amd64 -lvirtru-tdf3 -lstdc++
 // #include <stdlib.h>
 // #include <stdbool.h>
+// #include <tdf_constants_c.h>
+// #include <tdf_client_c.h>
 // #include <virtru_constants_c.h>
 // #include <virtru_client_c.h>
 // #include <virtru_config_service_c.h>

@@ -14,6 +14,12 @@
 #define VIRTRU_TDF3_SRC_VIRTRU_CONSTANTS_C_H
 
 #define LogDefaultError()    LogError("Default exception!");
+#ifdef __ANDROID__
+#include <android/log.h>
+#define LOGE(message) __android_log_print(ANDROID_LOG_ERROR  , "VIRTRU_SDK", "Native error: %s", message)
+#else
+#define LOGE(message) LogError(message)
+#endif
 
 #if defined _WIN32 || defined WIN32  || defined _WINDOWS || defined __CYGWIN__
   #ifdef _DLL
@@ -37,6 +43,9 @@
   #else
     #define DLL_PUBLIC
     #define DLL_LOCAL
+  #endif
+  #if __APPLE__
+    #define DLL_PUBLIC __attribute__((visibility("default"))) __attribute__((used))
   #endif
 #endif
 
