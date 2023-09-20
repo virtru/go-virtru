@@ -1,7 +1,7 @@
 package virtru
 
 // #cgo CFLAGS: -I${SRCDIR}/include
-// #cgo darwin,arm64 LDFLAGS: -L${SRCDIR}/lib/darwin/arm64 -lvirtru_tdf3 -lstdc++
+// #cgo darwin,arm64 LDFLAGS: -L${SRCDIR}/lib/darwin/arm64 -lvirtru_tdf3_static_combined -lstdc++
 // #cgo linux,amd64 LDFLAGS: -L${SRCDIR}/lib/linux/amd64 -lvirtru-tdf3 -lpthread -ldl -lm -lstdc++
 // #cgo windows,amd64 LDFLAGS: -L${SRCDIR}\lib\windows\amd64 -lvirtru-tdf3 -lstdc++
 // #include <stdlib.h>
@@ -11,6 +11,7 @@ package virtru
 // #include <virtru_constants_c.h>
 // #include <virtru_client_c.h>
 // #include <virtru_config_service_c.h>
+// #include <virtru_encrypt_file_params_c.h>
 import "C"
 import (
 	"errors"
@@ -36,15 +37,46 @@ func (a *Authentication) ClientCredentials(id string, secret string) error {
 	var clientId = C.CString(id)
 	var clientSecret = C.CString(secret)
 	var authnUrl = C.CString(a.Url.String())
-	var clientCredentials = C.TDFCreateCredentialClientCreds(authnUrl, clientId, clientSecret, nil)
-	authnService := C.TDFCreateClient(clientCredentials, authnUrl)
+	var kasUrl = C.CString(a.Url.String() + "/api/kas")
+	var clientCredentials = C.TDFCreateCredentialClientCreds(authnUrl, clientId, clientSecret, C.CString("tdf"))
+	authnService := C.TDFCreateClient(clientCredentials, kasUrl)
 	if authnService == nil {
 		return errors.New("OIDC service creation failed")
 	}
 	a.authnService = &authnService
-	fmt.Println(clientId)
-	fmt.Println(clientSecret)
 	return nil
+}
+
+func (a *Authentication) EncryptString(payload string) []byte {
+	//bytesGo := []byte(payload)
+	//bytesPtr := (*C.uchar)(unsafe.Pointer(&bytesGo))
+	//bytesLength := C.TDFBytesLength(len(payload))
+	//storageType := C.TDFCreateTDFStorageStringType(bytesPtr, bytesLength)
+	//var cipherBytes C.TDFCBytesPtr
+	//var cipherLength C.TDFBytesLength
+	cipherBytesGo := make([]byte, 256)
+	//cipherBytesC := (C.TDFCBytesPtr)(unsafe.Pointer(&cipherBytesGo[0]))
+	//C.TDFEncryptString(*a.authnService, storageType, &cipherBytesC, &cipherLength)
+	return cipherBytesGo
+}
+
+func (a *Authentication) ClientAndEncryptFile(id string, secret string) {
+	inFile := C.CString("./go.mod")
+
+	fileParamsPtr := C.TDFCreateTDFStorageFileType(inFile)
+	//storageType := C.TDFCreateTDFStorageFileType(C.CString("./go.mod.tdf"))
+	C.TDFEncryptFile(*a.authnService, fileParamsPtr, C.CString("./go.mod.tdf"))
+
+	//C.TDFClientDestroy(*a.authnService)
+	//C.TDFEncryptFileParamsDestroy(fileParamsPtr)
+}
+
+func (a *Authentication) Log() {
+	C.TDFEnableConsoleLogging(*a.authnService, C.TDFLogLevelTrace)
+}
+
+func (a *Authentication) Close() {
+	C.TDFDestroyClient(*a.authnService)
 }
 
 type Configuration struct {
