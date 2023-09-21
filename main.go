@@ -60,15 +60,26 @@ func (a *Authentication) EncryptString(payload string) []byte {
 	return cipherBytesGo
 }
 
-func (a *Authentication) ClientAndEncryptFile(id string, secret string) {
-	inFile := C.CString("./go.mod")
-
+func (a *Authentication) EncryptFile(inFilePath string, outFilePath string) error {
+	inFile := C.CString(inFilePath)
 	fileParamsPtr := C.TDFCreateTDFStorageFileType(inFile)
-	//storageType := C.TDFCreateTDFStorageFileType(C.CString("./go.mod.tdf"))
-	C.TDFEncryptFile(*a.authnService, fileParamsPtr, C.CString("./go.mod.tdf"))
+	status := C.TDFEncryptFile(*a.authnService, fileParamsPtr, C.CString(outFilePath))
+	if status == C.VSTATUS_SUCCESS {
+		return nil
+	} else {
+		return errors.New("error")
+	}
+}
 
-	//C.TDFClientDestroy(*a.authnService)
-	//C.TDFEncryptFileParamsDestroy(fileParamsPtr)
+func (a *Authentication) DecryptFile(inFilePath string, outFilePath string) error {
+	inFile := C.CString(inFilePath)
+	fileParamsPtr := C.TDFCreateTDFStorageFileType(inFile)
+	status := C.TDFDecryptFile(*a.authnService, fileParamsPtr, C.CString(outFilePath))
+	if status == C.VSTATUS_SUCCESS {
+		return nil
+	} else {
+		return errors.New("error")
+	}
 }
 
 func (a *Authentication) Log() {
