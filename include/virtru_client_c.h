@@ -22,7 +22,7 @@ extern "C" {
 	/// \param vMemoryPtr - The malloc'd memory to be freed.
 	DLL_PUBLIC VSTATUS VFreeMemory(void* vMemoryPtr);
 
-    /// DEPRECATED in favor of OIDC client credential flows
+	/// DEPRECATED in favor of OIDC client credential flows
 	/// Create a new Virtru client instance with owner and appId.
 	/// \param owner - The owner's email address to be used to authenticate for encrypt, decrypt
 	/// and policy management. Any data encrypted will be owned by the supplied email address.
@@ -33,7 +33,7 @@ extern "C" {
 	/// NOTE: On failure returns NULL ptr.
 	DLL_PUBLIC VClientPtr VClientCreateWithAppId(const char* owner, const char* appId);
 
-    /// DEPRECATED in favor of OIDC client credential flows
+	/// DEPRECATED in favor of OIDC client credential flows
 	/// Create a new Virtru Client instance with owner and HMAC apiKey/apiSecret.
 	/// <a href="https://developer.virtru.com/docs/how-to-add-authentication#section-3-hmac-token-and-secret">Contact Virtru</a> to get your
 	/// organization's HMAC apiKey/apiSecret
@@ -87,12 +87,36 @@ extern "C" {
 	/// NOTE: The caller of the api should free outPolicyId buffer.
 	DLL_PUBLIC VSTATUS VClientEncryptFile(VClientPtr vClientPtr, VEncryptFileParamsPtr vEncryptFileParamsPtr, char** outPolicyId);
 
+	/// Encrypt the contents of the input file into a RCA TDF. In the process of encryption, a policy is
+	/// associated with the TDF. The policy has a unique id which can be used to identify the TDF policy.
+	/// \param vClientPtr - The pointer to Virtru client opaque object.
+	/// \param vEncryptFileParamsPtr  - Encrypt file param opaque object holding all the required information for encrypt operations
+	/// \param outPolicyId  - On success, it contains policy id.
+	/// \param outRcaLink  - On success, it contains RCA tdf link.
+	/// \return VSTATUS - VSTATUS_SUCCESS on success
+	/// NOTE: The caller of the api should free outPolicyId buffer and outRcaLink.
+	DLL_PUBLIC VSTATUS VClientEncryptFileToRCA(VClientPtr vClientPtr, VEncryptFileParamsPtr vEncryptFileParamsPtr, char** outPolicyId, char** outRcaLink);
+
 	/// Decrypt the contents of the TDF file into its original content.
 	/// \param vClientPtr - The pointer to Virtru client opaque object.
 	/// \param inFilepath - The TDF file on which the decryption is performed
 	/// \param outFilepath - The file path of the original content after successful decryption
 	/// \return VSTATUS - VSTATUS_SUCCESS on success
 	DLL_PUBLIC VSTATUS VClientDecryptFile(VClientPtr vClientPtr, const char* inFilepath, const char* outFilepath);
+
+	/// Decrypt the remote contents(RCA) file into its original content.
+	/// \param vClientPtr - The pointer to Virtru client opaque object.
+	/// \param rcaLink - The link contains the information of remote content
+	/// \param outFilepath - The file path of the original content after successful decryption
+	/// \return VSTATUS - VSTATUS_SUCCESS on success
+	DLL_PUBLIC VSTATUS VClientDecryptRCAToFile(VClientPtr vClientPtr, const char* rcaLink, const char* outFilepath);
+
+	/// Decrypt the remote content TDF(RCA)
+	/// \param vClientPtr - The pointer to Virtru client opaque object.
+	/// \param rcaLink - The link contains the information of remote content
+	/// \param outString - On success, it contains RCA tdf link.
+	/// \return VSTATUS - VSTATUS_SUCCESS on success
+	DLL_PUBLIC VSTATUS VClientDecryptRCAToString(VClientPtr vClientPtr, const char* rcaLink, char** outString);
 
 	/// Encrypt the plain data into a TDF. In the process of encryption, a policy is
 	/// associated with the TDF. The policy has a unique id which can be used to identify the TDF policy.
@@ -105,6 +129,16 @@ extern "C" {
 	/// NOTE: The caller of the api should free outPolicyId buffer and outBytesPtr.
 	DLL_PUBLIC VSTATUS VClientEncryptString(VClientPtr vClientPtr, VEncryptStringParamsPtr vEncryptStringParamsPtr,
 		char** outPolicyId, VBytesPtr* outBytesPtr, VBytesLength* outBytesLength);
+
+	/// Encrypt the plain data into a remote TDF. In the process of encryption, a policy is
+	/// associated with the TDF. The policy has a unique id which can be used to identify the TDF policy.
+	/// \param vClientPtr - The pointer to Virtru client opaque object.
+	/// \param vEncryptStringParamsPtr  - Encrypt string param opaque object holding all the required information for encrypt operations
+	/// \param outPolicyId  - On success, it contains policy id.
+	/// \param outRcaLink  - On success, it contains RCA tdf link.
+	/// \return VSTATUS - VSTATUS_SUCCESS on success
+	/// NOTE: The caller of the api should free outPolicyId buffer and outRcaLink.
+	DLL_PUBLIC VSTATUS VClientEncryptStringToRCA(VClientPtr vClientPtr, VEncryptStringParamsPtr vEncryptStringParamsPtr, char** outPolicyId, char** outRcaLink);
 
 	/// Decrypt the TDF data
 	/// \param vClientPtr - The pointer to Virtru client opaque object.
@@ -124,6 +158,28 @@ extern "C" {
 	/// \return VSTATUS - VSTATUS_SUCCESS on success
 	/// NOTE: The caller of the api should free vPolicyPtr.
 	DLL_PUBLIC VSTATUS VClientFetchPolicyForUUID(VClientPtr vClientPtr, const char* policyUUID, VPolicyPtr* vPolicyPtr);
+	
+	/// Update the policy for a given TDF file using its policy uuid.
+	/// \param vClientPtr - The pointer to Virtru client opaque object.
+	/// \param vPolicyPtr - The pointer to Virtru policy opaque object.
+	/// \param policyUUID - The policy uuid of the TDF
+	DLL_PUBLIC VSTATUS VClientUpdatePolicyForUUID(VClientPtr vClientPtr, VPolicyPtr vPolicyPtr, const char* policyUUID);
+
+	/// Update the policy for a given TDF file.
+	/// \param vClientPtr - The pointer to Virtru client opaque object.
+	/// \param vPolicyPtr - The pointer to Virtru policy opaque object.
+	/// \param tdfFile - The TDF file path
+	DLL_PUBLIC VSTATUS VClientUpdatePolicyForFile(VClientPtr vClientPtr, VPolicyPtr vPolicyPtr, const char* tdfFile);
+
+	/// Revoke access for all the share users of the tdf files using the policy uuid.
+	/// \param vClientPtr - The pointer to Virtru client opaque object.
+	/// \param policyUUID - The policy uuid of the TDF
+	DLL_PUBLIC VSTATUS VClientRevokePolicy(VClientPtr vClientPtr, const char* policyUUID);
+
+	/// Revoke access for all the share users of the tdf file.
+	/// \param vClientPtr - The pointer to Virtru client opaque object.
+	/// \param tdfFile - The TDF file path
+	DLL_PUBLIC VSTATUS VClientRevokeFile(VClientPtr vClientPtr, const char* tdfFile);
 
 	/// Set the KAS url that will be used for tdf3 operations.
 	/// \param vClientPtr - The pointer to Virtru client opaque object.
