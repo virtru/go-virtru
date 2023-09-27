@@ -26,13 +26,13 @@
     #ifdef __GNUC__
       #define DLL_PUBLIC __attribute__ ((dllexport))
     #else
-      #define DLL_PUBLIC __declspec(dllexport)
+      #define DLL_PUBLIC __declspec(dllexport) 
     #endif
   #else
     #ifdef __GNUC__
       #define DLL_PUBLIC __attribute__ ((dllimport))
     #else
-      #define DLL_PUBLIC __declspec(dllimport)
+      #define DLL_PUBLIC __declspec(dllimport) 
     #endif
   #endif
   #define DLL_LOCAL
@@ -43,6 +43,9 @@
   #else
     #define DLL_PUBLIC
     #define DLL_LOCAL
+  #endif
+  #if __APPLE__
+    #define DLL_PUBLIC __attribute__((visibility("default"))) __attribute__((used))
   #endif
 #endif
 
@@ -75,6 +78,12 @@ typedef enum  {
 
 // Virtru client opaque object.
 typedef void* VClientPtr;
+
+// Virtru OIDC client opaque object
+typedef void* VClientOidcPtr;
+
+// Virtru storage type opaque object
+typedef void* VTDFStorageTypePtr;
 
 // Encrypt file params opaque object.
 typedef void* VEncryptFileParamsPtr;
